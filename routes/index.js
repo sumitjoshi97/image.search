@@ -1,61 +1,52 @@
 var express = require('express');
 var router = express.Router();
+
 var mongoose = require('mongoose');
-mongoose.connect('localhost:27017/test');
-var Schema = mongoose.Schema;
+mongoose.Promise = global.promise
 
-var userDataSchema = new Schema({
-  title: {type: String, required: true},
-  content: String,
-  author: String
-}, {collection: 'user-data'});
+var Search = require('bing.search');
+var search = new Search('48e92d69628247e3affa734e93990a4a ');
 
-var UserData = mongoose.model('UserData', userDataSchema);
+var SearchHistory = require('../models/searchHistory');
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index');
-});
+router.get('/search/:query', function (req, res, next) {
+  let query = req.params.query,
+      offset = req.query.offset || 10,
+      timestamp = Date.now();
 
-router.get('/get-data', function(req, res, next) {
-  UserData.find()
-      .then(function(doc) {
-        res.render('index', {items: doc});
-      });
-});
-
-router.post('/insert', function(req, res, next) {
-  var item = {
-    title: req.body.title,
-    content: req.body.content,
-    author: req.body.author
-  };
-
-  var data = new UserData(item);
-  data.save();
-
-  res.redirect('/');
-});
-
-router.post('/update', function(req, res, next) {
-  var id = req.body.id;
-
-  UserData.findById(id, function(err, doc) {
+  search.images(query, function(err, results){
     if (err) {
-      console.error('error, no entry found');
+      res.status(500).json(err);
+    } else {
+      res.status(200).json(results(results.map(createResults)));
     }
-    doc.title = req.body.title;
-    doc.content = req.body.content;
-    doc.author = req.body.author;
-    doc.save();
-  })
-  res.redirect('/');
+  });
+
+  let queryHistory = new SearchHistory({query, timestamp});
+  queryHistory.save();
 });
 
-router.post('/delete', function(req, res, next) {
-  var id = req.body.id;
-  UserData.findByIdAndRemove(id).exec();
-  res.redirect('/');
+router.get('/latest', function (req, res, next) {
+  SearchHistory
+    .find()
+    .select({_id: 0, query: 1, timestamp: 1})
+    .sort({timestamp: -1})
+    .limit(10)
+    .then(function (err, results) {
+      res
+        .status(200)
+        .json(results);
+    });
 });
 
 module.exports = router;
+
+function createResults(doc) {
+  return {
+    url: doc.url,
+    title: doc.title,
+    thumbnail: doc.thumbnail,
+    source: doc.source,
+    type: doc.type
+  }
+}

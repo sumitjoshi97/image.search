@@ -5,10 +5,13 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var hbs = require('express-handlebars');
-
+var searchApi = require('bing.search');
 var index = require('./routes/index');
-
+var mongoose = require('mongoose');
 var app = express();
+
+//mongoose connect to localhost
+mongoose.connect('localhost:27017/shopping');
 
 // view engine setup
 app.engine('hbs', hbs({extname: 'hbs', defaultLayout: 'layout', layoutsDir: __dirname + '/views/layouts/'}));
@@ -22,6 +25,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api' ,searchApi);
 
 app.use('/', index);
 
