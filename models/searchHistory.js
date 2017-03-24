@@ -4,7 +4,7 @@ var Schema = mongoose.Schema;
 
 var searchHistorySchema = new Schema({
     timestamp: Number,
-    query: Number
+    query: String
 });
 
 searchHistorySchema.index({timestamp: 1});

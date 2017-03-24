@@ -2,10 +2,10 @@ var express = require('express');
 var router = express.Router();
 
 var mongoose = require('mongoose');
-mongoose.Promise = global.promise
+mongoose.Promise = global.Promise;
 
 var Search = require('bing.search');
-var search = new Search('48e92d69628247e3affa734e93990a4a ');
+var search = new Search('48e92d69628247e3affa734e93990a4a');
 
 var SearchHistory = require('../models/searchHistory');
 
