@@ -9,7 +9,7 @@ var search = new Search('48e92d69628247e3affa734e93990a4a');
 
 var SearchHistory = require('../models/searchHistory');
 
-router.get('/search/:query', function (req, res, next) {
+router.get('/api/search/:query', function (req, res, next) {
   let query = req.params.query,
       offset = req.query.offset || 10,
       timestamp = Date.now();
@@ -26,7 +26,7 @@ router.get('/search/:query', function (req, res, next) {
   queryHistory.save();
 });
 
-router.get('/latest', function (req, res, next) {
+router.get('/api/latest', function (req, res, next) {
   SearchHistory
     .find()
     .select({_id: 0, query: 1, timestamp: 1})
